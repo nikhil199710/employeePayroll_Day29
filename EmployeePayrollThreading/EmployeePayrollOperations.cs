@@ -8,7 +8,6 @@ namespace EmployeePayrollSystemThreading
 {
     public class EmployeePayrollOperations
     {
-        
         public static string connectionString = @"Data Source=NIKHIL-ACER\SQLEXPRESS;Initial Catalog=payroll;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
         SqlConnection connection = new SqlConnection(connectionString);
         public List<EmployeeDetails> employeePayrollDetailList = new List<EmployeeDetails>();
@@ -26,32 +25,43 @@ namespace EmployeePayrollSystemThreading
             });
             Console.WriteLine(this.employeePayrollDetailList.ToString());
         }
-
-        public void addEmployeePayroll(EmployeeDetails emp)
-        {
-            employeePayrollDetailList.Add(emp);
-        }
-
         public void addEmployeeToPayrollWithThread(List<EmployeeDetails> employeePayrollDataList)
         {
             employeePayrollDataList.ForEach(employeeData =>
             {
                 Task thread = new Task(() =>
                 {
+                    Console.WriteLine("Employee Being added" + employeeData.EmployeeName);
                     this.addEmployeePayroll(employeeData);
-                    
+                    Console.WriteLine("Employee added:" + employeeData.EmployeeName);
                 });
                 thread.Start();
             });
         }
-        
+        public void addEmployeePayroll(EmployeeDetails emp)
+        {
+            employeePayrollDetailList.Add(emp);
+        }
         public void addEmployeeToPayrollDataBase(List<EmployeeDetails> employeePayrollDataList)
         {
             employeePayrollDataList.ForEach(employeeData =>
             {
-                
+                Console.WriteLine("Employee being added" + employeeData.EmployeeName);
                 this.addEmployeePayrollDatabase(employeeData);
-                
+                Console.WriteLine("Employee added" + employeeData.EmployeeName);
+            });
+        }
+        public void addEmployeeToPayrollDataBaseWithThread(List<EmployeeDetails> employeePayrollDataList)
+        {
+            employeePayrollDataList.ForEach(employeeData =>
+            {
+                Task thread = new Task(() =>
+                {
+                    Console.WriteLine("Employee being added" + employeeData.EmployeeName);
+                    this.addEmployeePayrollDatabase(employeeData);
+                    Console.WriteLine("Employee added" + employeeData.EmployeeName);
+                });
+                thread.Start();
             });
         }
         public void addEmployeePayrollDatabase(EmployeeDetails employeeDetails)
@@ -72,9 +82,9 @@ namespace EmployeePayrollSystemThreading
             command.Parameters.AddWithValue("@city", employeeDetails.City);
             command.Parameters.AddWithValue("@country", employeeDetails.Country);
             connection.Open();
+            //adding data into database - using disconnected architecture(as connected architecture only reads the data)
             var result = command.ExecuteNonQuery();
-            
-            Console.WriteLine(result);
+            //closing connection
             connection.Close();
 
 
